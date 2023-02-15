@@ -10,50 +10,72 @@
   <body class="m-4">
     <h1 class="text-3xl font-bold p-4">File Uploader</h1>
     <label for="file-input">
-      Select your file here 
+      Select your file here
       <input type="file" id="file-input" class="" />
     </label>
-   
+
     <button id="upload-btn" class="p-2 bg-gray-100 border border-2">
       Upload
     </button>
     <div id="progress" class="mt-4 w-1/3 h-3 bg-white border border-2">
-        <div id="progress-bar" class="bg-green-600 h-full w-0">
-        </div>
+      <div id="progress-bar" class="bg-green-600 h-full w-0"></div>
     </div>
     <script>
       const uploadBtn = document.getElementById("upload-btn");
       const progressBar = document.getElementById("progress-bar");
       const fileInput = document.getElementById("file-input");
 
-      uploadBtn.addEventListener("click", () => {
-        const fileReader = new FileReader();
+      uploadBtn.addEventListener("click", async () => {
+        // const fileReader = new FileReader();
         const selectedFile = fileInput.files[0];
-        fileReader.onload = async (ev) => {
-          const CHUNK_SIZE = 1000;
-          const chunkCount = Math.ceil(
-            ev.target.result.byteLength / CHUNK_SIZE
-          );
-          const fileName = Math.random() * 1000  + selectedFile.name;
-          for (let chunkId = 0; chunkId < chunkCount; chunkId++) {
-            const chunk = ev.target.result.slice(
-              chunkId * CHUNK_SIZE,
-              chunkId * CHUNK_SIZE + CHUNK_SIZE
-            );
-            await fetch("http://localhost:8080/upload", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/octet-stream",
-                    "content-length": chunk.length,
-                    "file-name": fileName,
-                },
-                body: chunk,
-            });
-            progressBar.style.width = `${(chunkId * 100) / chunkCount}%`;
+        const fileName = Math.random() * 1000 + selectedFile.name;
+        const reader = selectedFile.stream().getReader();
+        console.log("Selected File Size:", selectedFile.size);
+        let bytesUploaded = 0;
+        while (true) {
+          const response = await reader.read();
+          const { done, value } = response;
+          if (done) {
+            break;
           }
-          
-        };
-        fileReader.readAsArrayBuffer(selectedFile);
+          bytesUploaded += value.length;
+          await fetch("http://localhost:8080/upload", {
+            method: "POST",
+            headers: {
+              "content-type": "application/octet-stream",
+              "content-length": value.length,
+              "file-name": fileName,
+            },
+            body: value,
+          });
+          progressBar.style.width = `${
+            (bytesUploaded * 100) / selectedFile.size
+          }%`;
+        }
+        // fileReader.onload = async (ev) => {
+        //   const CHUNK_SIZE = 1000;
+        //   const chunkCount = Math.ceil(
+        //     ev.target.result.byteLength / CHUNK_SIZE
+        //   );
+        //   for (let chunkId = 0; chunkId < chunkCount; chunkId++) {
+        //     const chunk = ev.target.result.slice(
+        //       chunkId * CHUNK_SIZE,
+        //       chunkId * CHUNK_SIZE + CHUNK_SIZE
+        //     );
+        //     await fetch("http://localhost:8080/upload", {
+        //         method: "POST",
+        //         headers: {
+        //             "content-type": "application/octet-stream",
+        //             "content-length": chunk.length,
+        //             "file-name": fileName,
+        //         },
+        //         body: chunk,
+        //     });
+        //     progressBar.style.width = `${(chunkId * 100) / chunkCount}%`;
+        //   }
+
+        // };
+        // fileReader.readAsArrayBuffer(selectedFile);
       });
     </script>
   </body>
