@@ -1,36 +1,31 @@
-import readline from 'readline';
-
+import * as  inquirer from 'inquirer';
 import { AsyncQueueExample } from "./queues/1-async-queue-with-limited-capacity/example";
+import fileUploader from './file-uploader';
 
 const questions: Record<string, () => void> = {
     'async-queue-with-limited-capacity': AsyncQueueExample,
+    'file-uploader': fileUploader,
 };
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
-
-const question = `\n\nType below options to run a specific program:
-
-    ${Object.keys(questions)
-        .reduce((q, current) => q + '\n' + current + '\n\n\n', '')}
-`;
-
-const ask = () => {
-    rl.question(
-        question,
-        answer => {
-            if (questions[answer]) {
-                questions[answer]();
-            } else {
-                console.log('Please type valid option :(');
+const prompt = () => {
+    inquirer.default
+        .prompt([{
+            type: 'rawlist',
+            name: 'program',
+            message: 'Select program to run',
+            choices: ["exit", ...Object.keys(questions)]
+        }])
+        .then((answer) => {
+            if (answer.program === "exit") {
+                return process.exit();
             }
-            ask();
+            questions[answer.program]();
         });
 }
 
-ask();
+prompt();
+
+
 
 
 
