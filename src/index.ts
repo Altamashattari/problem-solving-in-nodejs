@@ -1,6 +1,6 @@
 import * as  inquirer from 'inquirer';
-import { AsyncQueueExample } from "./queues/1-async-queue-with-limited-capacity/example";
-import fileUploader from './file-uploader';
+import { AsyncQueueExample } from "./1-queues/1-async-queue-with-limited-capacity/example";
+import fileUploader from './2-file-uploader';
 
 const questions: Record<string, () => void> = {
     'async-queue-with-limited-capacity': AsyncQueueExample,

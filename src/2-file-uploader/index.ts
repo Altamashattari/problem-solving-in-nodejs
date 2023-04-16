@@ -8,7 +8,7 @@ const fileUploader = () => {
 
     server.on('request', (req, res) => {
         if (req.url === '/') {
-            res.end(fs.readFileSync("src/file-uploader/index.html"));
+            res.end(fs.readFileSync("src/2-file-uploader/index.html"));
             return;
         }
 
